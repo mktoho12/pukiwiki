@@ -83,9 +83,9 @@ function plugin_counter_convert()
 		$yesterday_html = PLUGIN_COUNTER_ASYNC_HTML_YESTERDAY;
 		return <<<EOD
 <div class="counter">
-Counter: ${total_html},
-today: ${today_html},
-yesterday: ${yesterday_html}
+Counter: {$total_html},
+today: {$today_html},
+yesterday: {$yesterday_html}
 </div>
 EOD;
 	}
