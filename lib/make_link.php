@@ -45,6 +45,7 @@ class InlineConverter
 	var $pattern;
 	var $pos;
 	var $result;
+	var $page;
 
 	function get_clone($obj) {
 		static $clone_exists;

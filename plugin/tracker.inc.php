@@ -768,6 +768,7 @@ function plugin_tracker_getlist($page,$refer,$config_name,$list,$order='',$limit
 class Tracker_list
 {
 	var $page;
+	var $items, $link_pages, $link_update_required, $pipe;
 	var $config;
 	var $list;
 	var $fields;
