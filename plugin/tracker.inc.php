@@ -1098,7 +1098,7 @@ class Tracker_list
 					$dir = SORT_DESC;
 					break;
 				default:
-					continue;
+					break; // 'continue' here worked as 'break'
 			}
 			$this->order[$key] = $dir;
 		}

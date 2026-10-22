@@ -201,7 +201,9 @@ function plugin_counter_get_count($page)
 		// Read
 		foreach (array_keys($default) as $key) {
 			// Update
-			$c[$key] = rtrim(fgets($fp, 256));
+			$line = fgets($fp, 256);
+			if ($line === FALSE) break; // Empty file: keep default values
+			$c[$key] = rtrim($line);
 			if (feof($fp)) break;
 		}
 	}
