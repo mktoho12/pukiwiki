@@ -387,6 +387,9 @@ class ListContainer extends Element
 
 class ListElement extends Element
 {
+	var $level;
+	var $head;
+
 	function ListElement($level, $head)
 	{
 		$this->__construct($level, $head);
