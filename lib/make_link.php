@@ -1066,7 +1066,7 @@ Reference: https://pukiwiki.osdn.jp/?AutoTicketLink
  -- PROJECTA Site2 \$1
 
  (Default definition) pukiwiki.ini.php
- $ticket_jira_default_site = array(
+ \$ticket_jira_default_site = array(
    'title' => 'My JIRA - \$1',
    'base_url' => 'https://issues.example.com/jira/browse/',
  );
