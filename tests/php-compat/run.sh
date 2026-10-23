@@ -9,10 +9,10 @@
 #
 # Example: tests/php-compat/run.sh r1_5_4 HEAD 412 449 85
 set -e
+[ $# -ge 2 ] || { sed -n '2,10p' "$0" | sed 's/^# \{0,1\}//'; exit 1; }
 cd "`dirname "$0"`"
 HERE=`pwd`
 TOP=`git rev-parse --show-toplevel`
-[ $# -ge 2 ] || { sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//'; exit 1; }
 BASE=$1; TARGET=$2; shift 2
 VERSIONS=${*:-"412 444 449 56 70 74 82 83 84 85"}
 OUT=$HERE/out
@@ -23,13 +23,14 @@ git -C "$TOP" archive "$TARGET" | tar -x -C "$OUT/src-target"
 status=0
 for v in $VERSIONS; do
 	case $v in
-	4*) img=pukiwiki-php-compat:php$v
+	# The old Debian images are for amd64 only (emulated on arm64 hosts)
+	4*) img=pukiwiki-php-compat:php$v; platform="--platform linux/amd64"
 	    docker image inspect $img > /dev/null 2>&1 ||
-	        docker build -q -t $img -f docker/php$v.Dockerfile docker > /dev/null ;;
-	*)  img=php:`echo $v | sed 's/^\(.\)/\1./'`-cli ;;
+	        docker build -q $platform -t $img -f docker/php$v.Dockerfile docker > /dev/null ;;
+	*)  img=php:`echo $v | sed 's/^\(.\)/\1./'`-cli; platform="" ;;
 	esac
 	for side in base target; do
-		docker run --rm -u `id -u`:`id -g` -v "$OUT:/out" -v "$HERE:/test:ro" $img \
+		docker run --rm $platform -u `id -u`:`id -g` -v "$OUT:/out" -v "$HERE:/test:ro" $img \
 			sh /test/render.sh /out/src-$side /out/$v-$side /test/pages
 	done
 	pages=`ls "$OUT/$v-target"/*.html | wc -l`
