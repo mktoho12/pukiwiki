@@ -1,16 +1,22 @@
 #!/bin/sh
-# Runs inside a container: render.sh <src-dir> <out-dir> <pages-dir>
-# Copies a PukiWiki tree, adds the test pages, and renders every page and
-# some commands with php-cgi, logging all errors (E_ALL) to <out-dir>/errors.log.
-# Written for old tools too (Debian woody: no "sed -i", no "find -exec +").
-SRC=$1; OUT=$2; PAGES=$3
+# Runs inside a container: render.sh <src.tar> <out-dir> <pages.tar>
+# Unpacks a PukiWiki tree and the test pages into /tmp, renders every page
+# and some commands with php-cgi, and logs all errors (E_ALL) to errors.log.
+#
+# Written for old tools (Debian woody: no "sed -i", no "find -exec +").
+# All the work is done in /tmp (tmpfs): when an old 32-bit program is
+# emulated on arm64 hosts, it cannot list a directory on other file systems
+# ("Value too large for defined data type"). So this script never lists
+# <out-dir>; it only copies the results there.
+SRC_TAR=$1; OUT=$2; PAGES_TAR=$3
 CGI=/usr/local/bin/php-cgi
-RUN=/tmp/run.$$
-rm -rf $RUN $OUT; mkdir -p $OUT; cp -R $SRC $RUN; cd $RUN
-cp $PAGES/*.txt wiki/
+RUN=/tmp/run; WORK=/tmp/out
+rm -rf $RUN $WORK; mkdir $RUN $WORK; cd $RUN
+tar -xf $SRC_TAR
+(cd wiki && tar -xf $PAGES_TAR)
 sed 's/^error_reporting(E_ERROR | E_PARSE);/error_reporting(E_ALL);/' index.php > index.tmp && mv index.tmp index.php
 mkdir phpini
-printf "display_errors=0\nlog_errors=1\nerror_log=$OUT/errors.log\nerror_reporting=2047\nmemory_limit=256M\ndate.timezone=UTC\n" > phpini/php.ini
+printf "display_errors=0\nlog_errors=1\nerror_log=$WORK/errors.log\nerror_reporting=2047\nmemory_limit=256M\ndate.timezone=UTC\n" > phpini/php.ini
 chmod -R a+w wiki cache counter diff backup attach 2>/dev/null
 find . -type f -exec touch -d '2020-01-01 00:00:00' {} \;
 req() { # $1 = query string, $2 = output name
@@ -20,7 +26,7 @@ req() { # $1 = query string, $2 = output name
 		REQUEST_URI="/index.php?$1" SERVER_NAME=localhost SERVER_PORT=80 \
 		SERVER_PROTOCOL=HTTP/1.0 REMOTE_ADDR=127.0.0.1 HTTP_USER_AGENT=Mozilla/5.0 \
 		HTTP_ACCEPT_LANGUAGE=ja PHPRC=$RUN/phpini \
-		$CGI > "$OUT/$2.html" 2>> $OUT/stderr.log
+		$CGI > "$WORK/$2.html" 2>> $WORK/stderr.log
 }
 for f in wiki/*.txt; do
 	hex=`basename $f .txt`
@@ -36,8 +42,10 @@ req "cmd=backup&page=FormattingRules" cmd-backup
 req "cmd=related&page=FrontPage" cmd-related
 req "cmd=source&page=FormattingRules" cmd-source
 # Remove what changes on every run (RecentChanges is written while rendering)
-for f in $OUT/*.html; do
+for f in $WORK/*.html; do
 	sed -e 's/[0-9][0-9]*\.[0-9][0-9]* sec/N sec/g' \
 	    -e 's/data-mtime="[^"]*"/data-mtime=""/g' $f > $f.tmp && mv $f.tmp $f
 done
-rm -rf $RUN
+mkdir -p $OUT
+cp $WORK/* $OUT/
+rm -rf $RUN $WORK

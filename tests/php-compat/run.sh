@@ -16,25 +16,34 @@ TOP=`git rev-parse --show-toplevel`
 BASE=$1; TARGET=$2; shift 2
 VERSIONS=${*:-"412 444 449 56 70 74 82 83 84 85"}
 OUT=$HERE/out
-rm -rf "$OUT"; mkdir -p "$OUT/src-base" "$OUT/src-target"
-git -C "$TOP" archive "$BASE"   | tar -x -C "$OUT/src-base"
-git -C "$TOP" archive "$TARGET" | tar -x -C "$OUT/src-target"
+rm -rf "$OUT"; mkdir -p "$OUT"
+# The containers get the files as tar files (see render.sh).
+# Archive the trees, not the commits: the old tar does not know the
+# pax global header that holds the commit id.
+git -C "$TOP" archive -o "$OUT/src-base.tar"   "$BASE^{tree}"
+git -C "$TOP" archive -o "$OUT/src-target.tar" "$TARGET^{tree}"
+(cd pages && COPYFILE_DISABLE=1 tar --format=ustar -cf "$OUT/pages.tar" *.txt)
 
 status=0
 for v in $VERSIONS; do
 	case $v in
-	# The old Debian images are for amd64 only (emulated on arm64 hosts)
-	4*) img=pukiwiki-php-compat:php$v; platform="--platform linux/amd64"
+	# The old Debian images are for x86 only (emulated on arm64 hosts)
+	412) img=pukiwiki-php-compat:php$v; platform="--platform linux/386" ;;
+	4*)  img=pukiwiki-php-compat:php$v; platform="--platform linux/amd64" ;;
+	*)   img=php:`echo $v | sed 's/^\(.\)/\1./'`-cli; platform="" ;;
+	esac
+	case $v in
+	4*)
 	    if ! docker image inspect $img > /dev/null 2>&1; then
 	        echo "Building $img (first time only; see $OUT/build-php$v.log)"
 	        docker build $platform -t $img -f docker/php$v.Dockerfile docker \
 	            > "$OUT/build-php$v.log" 2>&1 || { tail -30 "$OUT/build-php$v.log"; exit 1; }
 	    fi ;;
-	*)  img=php:`echo $v | sed 's/^\(.\)/\1./'`-cli; platform="" ;;
 	esac
 	for side in base target; do
-		docker run --rm $platform -u `id -u`:`id -g` -v "$OUT:/out" -v "$HERE:/test:ro" $img \
-			sh /test/render.sh /out/src-$side /out/$v-$side /test/pages
+		docker run --rm $platform -u `id -u`:`id -g` --tmpfs /tmp:rw,size=512m \
+			-v "$OUT:/out" -v "$HERE:/test:ro" $img \
+			sh /test/render.sh /out/src-$side.tar /out/$v-$side /out/pages.tar
 	done
 	pages=`ls "$OUT/$v-target"/*.html | wc -l`
 	# Pages that did not finish (fatal error, crash, or not run at all)
