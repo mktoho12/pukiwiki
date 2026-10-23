@@ -1,0 +1,6 @@
+#navi(試験町)
+* カウンター
+counter プラグイン（と、それを使う popular プラグイン）は PukiWiki 1.5.4 の時点で PHP 4 では動かない（構文エラーになる）ので、このページだけに置いています。
+#counter
+今日: &counter(today); 昨日: &counter(yesterday);
+#popular

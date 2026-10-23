@@ -1,0 +1,83 @@
+#contents
+* Heading 1 [#h1fixed]
+Paragraph line 1
+line 2~
+line 3 after break
+~Tilde paragraph start
+
+** Heading 2
+- list 1
+-- list 1-1
+--- list 1-1-1
+-- list 1-2
+- list 2
++ ordered 1
+++ ordered 1-1
+- list after ordered
++ mixed
+-- nested ul in ol
+continuation line in list
+: term | description
+:: term2 | desc2
+: term only |
+: | desc only
+-
+- empty item above
+*** Heading 3
+**** Heading 4 (clamped)
+> quote 1
+>> quote 2
+>>> quote 3
+text inside quote 3
+<<< close 3
+< close to top
+> quote again
+- list in quote
+< back
+>> deep start
+<< close deep
+plain after quotes
+>~quote tilde
+< 
+< close with nothing
+
+| a | b | c |h
+| 1 |>| 3 |
+| ~ | 5 | 6 |
+|LEFT:x|CENTER:y|RIGHT:z|
+|BGCOLOR(#eee):p|COLOR(red):q|SIZE(10):r|
+|20|30|40|c
+|f1|f2|f3|f
+| ~th | #br | tilde ~ |
+| only one column |
+, ya , yb , yc
+, yd ,==, ye
+,left , right,  center  
+ pre line 1
+ pre line 2
+	tab pre
+LEFT:left text
+CENTER:
+centered paragraph
+RIGHT:right text
+----
+#hr
+#br
+#comment
+#ls2
+#nonexistentplugin
+#article
+#pcomment
+#related
+#norelated
+// comment line
+#contents
+* Last heading
+- list
+> quote in list?
+-- deeper after quote
+: dl | after
+| t | u |
+ pre after table
+~
+end paragraph

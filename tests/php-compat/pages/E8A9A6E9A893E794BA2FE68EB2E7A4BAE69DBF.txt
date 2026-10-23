@@ -1,0 +1,25 @@
+#navi(試験町)
+* 掲示板
+プラグインの表示を確かめるためのページです。
+#comment
+#pcomment
+#article
+#vote(賛成[0],反対[0],どちらでもない[0])
+** ページの一覧
+#ls2(試験町/)
+#recent(5)
+#related
+#calendar2(off)
+** 文字の飾り
+&ruby(よ){読}; &size(10){小さい}; &color(blue,yellow){色付き}; &new{2020-01-01 (水) 00:00:00}; &online;
+&ref(存在しない画像.png); &aname(anchor1){アンカー}; [[#anchor1]] &br; &heart; &smile;
+#ref(存在しない添付.txt)
+#nonexistent_plugin(引数)
+#memo
+#lookup(pukiwiki,FrontPage)
+#version
+** 複数行の引数
+#article{{
+これは複数行の
+引数のテストです
+}}
