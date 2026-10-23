@@ -25,8 +25,11 @@ for v in $VERSIONS; do
 	case $v in
 	# The old Debian images are for amd64 only (emulated on arm64 hosts)
 	4*) img=pukiwiki-php-compat:php$v; platform="--platform linux/amd64"
-	    docker image inspect $img > /dev/null 2>&1 ||
-	        docker build -q $platform -t $img -f docker/php$v.Dockerfile docker > /dev/null ;;
+	    if ! docker image inspect $img > /dev/null 2>&1; then
+	        echo "Building $img (first time only; see $OUT/build-php$v.log)"
+	        docker build $platform -t $img -f docker/php$v.Dockerfile docker \
+	            > "$OUT/build-php$v.log" 2>&1 || { tail -30 "$OUT/build-php$v.log"; exit 1; }
+	    fi ;;
 	*)  img=php:`echo $v | sed 's/^\(.\)/\1./'`-cli; platform="" ;;
 	esac
 	for side in base target; do
